@@ -1,0 +1,48 @@
+function formSubmitReply(e) {
+  var userEmail = "helpdesk@library.nyu.edu";
+  var sheet = SpreadsheetApp.getActiveSheet();
+  var lastRow = sheet.getLastRow();
+  var row = sheet.getActiveRange().getRowIndex();
+  var machine =new Array("R10E-PC01","R10S-PC02","R10S-PC03","R10W-PC04");
+  
+  // Set the status of the new ticket to 'New'.
+  // Column F is the Status column
+  sheet.getRange(lastRow, getColIndexByName("Status")).setValue("New");
+  
+  for (var i = 2; i < 6; i++) {
+    if (e.values[i] == "No issue") {
+      continue;
+    }
+    if (e.values[i] == "") {
+      continue;
+    }
+    else if (e.values[i] == "Needs Reimage") {
+      MailApp.sendEmail(userEmail,
+                        machine[i-2] + " Needs to be reimaged" ,
+                        "The following machine has an issue: " + machine[i-2] +
+                        "\n\nPlease reimage." ,
+                        {name: "Bobcat Runner"}
+                       )
+    }
+    else if (e.values[i] != "Needs Reimage" && e.values[i] != "No issue") {
+      MailApp.sendEmail(userEmail,
+                        machine[i-2] + " Has an issue" ,
+                        "The following machine has an issue: " + machine[i-2] +
+                        "\n\n" + e.values[i],
+                        {name: "Bobcat Runner"}
+                       )
+    }
+  }
+}
+function getColIndexByName(colName) {
+  var sheet = SpreadsheetApp.getActiveSheet();
+  var numColumns = sheet.getLastColumn();
+  var row = sheet.getRange(1, 1, 1, numColumns).getValues();
+  for (i in row[0]) {
+    var name = row[0][i];
+    if (name == colName) {
+      return parseInt(i) + 1;
+    }
+  }
+  return -1;
+}
